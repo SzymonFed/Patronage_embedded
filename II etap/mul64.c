@@ -22,13 +22,13 @@ uint64_t l_shift(uint64_t a, uint64_t *c, int i)
 uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
 {
     
-    uint64_t wynik = 0;
+    uint64_t result = 0;
     *c = 0;
     while(b)
     {
-        wynik = a^b;
+        result = a^b;
         b = a&b;
-        a = wynik;
+        a = result;
         if(b)
         {
             *c <<=1;
@@ -38,7 +38,7 @@ uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
         b<<=1;
     }
     
-    return wynik;
+    return result;
 }
 
 
