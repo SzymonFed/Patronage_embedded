@@ -37,7 +37,7 @@ uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
         }
         b<<=1;
     }
-    printf("Result: %lu Rest: %lu\n",result,*c);
+    
     return result;
 }
 
