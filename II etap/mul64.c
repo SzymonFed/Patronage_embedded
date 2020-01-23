@@ -22,7 +22,7 @@ uint64_t l_shift(uint64_t a, uint64_t *c, int i)
 uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
 {
     
-    uint64_t result = 0;
+    uint64_t result = a;
     *c = 0;
     while(b)
     {
@@ -37,7 +37,7 @@ uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
         }
         b<<=1;
     }
-    
+    printf("Result: %lu Rest: %lu\n",result,*c);
     return result;
 }
 
@@ -46,6 +46,8 @@ void mul64(uint64_t *p, uint64_t a, uint64_t b)
 {
     int count = 0;
     uint64_t shift_rest, sum_rest;
+    shift_rest = 0;
+    sum_rest = 0;
     p[0] = 0, p[1] = 0;
     while(b)
     {
