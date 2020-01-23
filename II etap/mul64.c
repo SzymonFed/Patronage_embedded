@@ -3,10 +3,64 @@
 #include <stdint.h>
 #include <unistd.h>
 
+uint64_t l_shift(uint64_t a, uint64_t *c, int i)
+{
+    *c = 0;
+    while (i>0)
+    {
+        *c<<=1;
+        if(a&0x8000000000000000UL)
+            *c+=0x1UL;
+        
+        a<<=1;
+        i--;
+    }
+    
+    return a;
+}
+
+uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
+{
+    
+    uint64_t wynik = 0;
+    *c = 0;
+    while(b)
+    {
+        wynik = a^b;
+        b = a&b;
+        a = wynik;
+        if(b)
+        {
+            *c <<=1;
+            if(b&0x8000000000000000UL)
+                *c+=1UL;
+        }
+        b<<=1;
+    }
+    
+    return wynik;
+}
+
+
 void mul64(uint64_t *p, uint64_t a, uint64_t b)
 {
-    /* uzupełnić */
-}
+    int count = 0;
+    uint64_t shift_rest, sum_rest;
+    p[0] = 0, p[1] = 0;
+    while(b)
+    {
+        if (b%2 == 1)
+        {
+            uint64_t dupa = l_shift(a,&shift_rest,count);
+            p[0] = sum(p[0],dupa,&sum_rest);
+            p[1] +=(sum_rest + shift_rest);    
+        }
+        b/=2;
+          
+        count++;
+    }
+    
+}   
 
 void print_big(char *str, uint64_t *p, size_t n)
 {
@@ -59,7 +113,7 @@ int main(int argc, char *argv[])
         return 1;
 
     b = strtoul(argv[2], &end, 0);
-
+    
     if (*end)
         return 1;
 
@@ -67,6 +121,6 @@ int main(int argc, char *argv[])
     print_big(str, p, 2);
     printf("0x%016lx * 0x%016lx = 0x%016lx%016lx\n",
             a, b, p[1], p[0]);
-    printf("%ld * %ld = %s\n", a, b, str);
+    printf("%lu * %lu = %s\n", a, b, str);
     return 0;
 }
