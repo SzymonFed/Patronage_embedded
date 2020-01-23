@@ -51,8 +51,8 @@ void mul64(uint64_t *p, uint64_t a, uint64_t b)
     {
         if (b%2 == 1)
         {
-            uint64_t dupa = l_shift(a,&shift_rest,count);
-            p[0] = sum(p[0],dupa,&sum_rest);
+            uint64_t temp = l_shift(a,&shift_rest,count);
+            p[0] = sum(p[0],temp,&sum_rest);
             p[1] +=(sum_rest + shift_rest);    
         }
         b/=2;
