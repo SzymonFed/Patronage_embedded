@@ -3,65 +3,30 @@
 #include <stdint.h>
 #include <unistd.h>
 
-uint64_t l_shift(uint64_t a, uint64_t *c, int i)
-{
-    *c = 0;
-    while (i>0)
-    {
-        *c<<=1;
-        if(a&0x8000000000000000UL)
-            *c+=0x1UL;
-        
-        a<<=1;
-        i--;
-    }
-    
-    return a;
-}
-
-uint64_t sum(uint64_t a, uint64_t b, uint64_t *c)
-{
-    
-    uint64_t result = a;
-    *c = 0;
-    while(b)
-    {
-        result = a^b;
-        b = a&b;
-        a = result;
-        if(b)
-        {
-            *c <<=1;
-            if(b&0x8000000000000000UL)
-                *c+=1UL;
-        }
-        b<<=1;
-    }
-    
-    return result;
-}
-
+#define MASK 0x00000000ffffffffUL
 
 void mul64(uint64_t *p, uint64_t a, uint64_t b)
 {
-    int count = 0;
-    uint64_t shift_rest, sum_rest;
-    shift_rest = 0;
-    sum_rest = 0;
-    p[0] = 0, p[1] = 0;
-    while(b)
-    {
-        if (b%2 == 1)
-        {
-            uint64_t temp = l_shift(a,&shift_rest,count);
-            p[0] = sum(p[0],temp,&sum_rest);
-            p[1] +=(sum_rest + shift_rest);    
-        }
-        b/=2;
-          
-        count++;
-    }
+    uint64_t AlBl, AlBh, AhBl, AhBh,temp,rest=0;
+    AlBl = (a&MASK) * (b&MASK);
+    AlBh = (a&MASK) * (b>>32);
+    AhBl = (a>>32)* (b&MASK);
+    AhBh = (a>>32)* (b>>32);
+
     
+    temp = AlBl + (AlBh<<32);
+    if ((AlBl > 0) && ((AlBh<<32) > UINT64_MAX - AlBl))
+    {
+        rest+=1;
+    }
+    p[0] = temp + (AhBl<<32);
+    
+    if ((temp > 0) && ((AhBl<<32) > UINT64_MAX - temp))
+    {
+        rest+=1;
+    }
+    p[1] = AhBh + (AlBh>>32) + (AhBl>>32) + rest;
+
 }   
 
 void print_big(char *str, uint64_t *p, size_t n)
