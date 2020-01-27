@@ -14,18 +14,18 @@
 #define SERVER_IP "127.0.0.1"
 #define MAX_CONNECTION 10
 
-int find_word(char *pattern, char *line);
+void find_word(char *pattern, char *line,char* position);
 
 int main()
 {
     
     struct sockaddr_in server;
     
-    const int server_socket= socket(AF_INET,SOCK_STREAM,0);
+    int server_socket= socket(AF_INET,SOCK_STREAM,0);
     socklen_t socketlen ;
     server.sin_family = AF_INET;
     server.sin_port = htons(SERVER_PORT);
-    server.sin_addr.s_addr=htons(SERVER_IP);
+    server.sin_addr.s_addr=inet_addr(SERVER_IP);
     socketlen = sizeof(server);
     
     
@@ -53,58 +53,68 @@ int main()
     }
     while(1)
     {
-        
-        
         struct sockaddr_in client;
         char buffer[MAX_MSG_LEN];
         char *pattern;
         char *line;
-        int position;
+
+        
         const char delimiter[] = " ";
-        int clientSocket;
+        int client_socket;
         printf("Waiting for connection...\n");
 
-        clientSocket = accept( server_socket,(struct sockaddr *) &client, &socketlen);
+        client_socket = accept( server_socket,(struct sockaddr *) &client, &socketlen);
         
-        if (clientSocket<0)
+        if (client_socket<0)
         {
             perror( "accept() ERROR" );
             continue;
         }
         
-        if ( recv(clientSocket,&buffer,sizeof(buffer),0)<=0)
+        
+        if (recv(client_socket,&buffer,sizeof(buffer),0)<=0)
         {
             perror( "recv() ERROR" );
-            exit( 5 );
+            shutdown (client_socket,SHUT_RDWR);
+            
+            continue;
         }
         
-
+        
         pattern = strtok(buffer,delimiter);
         if (pattern)
             line = strtok(NULL,delimiter);
         else 
         {
             printf("ERROR: invalid string.\n");
-            exit(0);
+            shutdown (client_socket,SHUT_RDWR);
+            continue;
         }
         if(!line)
         {
             printf("ERROR: invalid string.\n");
-            exit(0);
+            shutdown (client_socket,SHUT_RDWR);
+            continue;
         }
-        position = find_word(pattern,line);
 
-        printf("Pattern:%s\n Line: %s\n Position of pattern: %d\n",pattern,line,position);
+        find_word(pattern,line,buffer);
 
-        shutdown (clientSocket,SHUT_RDWR);
+        if( send( client_socket,buffer, strlen(buffer), 0) <=0)
+            {
+                perror("send() ERROR");
+                shutdown (client_socket,SHUT_RDWR);
+            }
+
+        shutdown (client_socket,SHUT_RDWR);
     }
     shutdown(server_socket,SHUT_RDWR);
 }
 
-int find_word(char *pattern, char *line)
+void find_word(char *pattern, char *line, char* position)
 {
     int i=0, j = 0;
     int pattern_length, line_length;
+    
     pattern_length = strlen(pattern);
     line_length = strlen(line);
 
@@ -118,8 +128,9 @@ int find_word(char *pattern, char *line)
     }
 
     if (i< (pattern_length-1))
-        return -1;
+        sprintf(position,"%d",-1);
     else
-        return j-pattern_length;
+        sprintf(position,"%d",j-pattern_length);
+    
 }
 
